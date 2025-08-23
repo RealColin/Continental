@@ -1,7 +1,8 @@
 package com.example.examplemod;
 
 import net.minecraftforge.fml.common.Mod;
-import realcolin.continental.CommonClass;
+import realcolin.continental.Constants;
+import realcolin.continental.Continental;
 
 @Mod(Constants.MOD_ID)
 public class ExampleMod {
@@ -14,7 +15,7 @@ public class ExampleMod {
 
         // Use Forge to bootstrap the Common mod.
         Constants.LOG.info("Hello Forge world!");
-        CommonClass.init();
+        Continental.init();
 
     }
 }

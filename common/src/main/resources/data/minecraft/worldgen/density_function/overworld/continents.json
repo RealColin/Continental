@@ -1,0 +1,20 @@
+{
+  "type": "continental:gradient_dist",
+  "point_x": 0,
+  "point_z": 0,
+  "min_val": -1.0,
+  "max_val": 1.0,
+  "base": {
+    "type": "minecraft:flat_cache",
+    "argument": {
+      "type": "minecraft:shifted_noise",
+      "noise": "minecraft:continentalness",
+      "shift_x": "minecraft:shift_x",
+      "shift_y": 0,
+      "shift_z": "minecraft:shift_z",
+      "xz_scale": 0.25,
+      "y_scale": 0
+    }
+  },
+  "dropoff": 0.0005
+}

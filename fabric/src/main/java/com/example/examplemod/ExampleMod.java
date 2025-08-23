@@ -1,7 +1,8 @@
 package com.example.examplemod;
 
 import net.fabricmc.api.ModInitializer;
-import realcolin.continental.CommonClass;
+import realcolin.continental.Constants;
+import realcolin.continental.Continental;
 
 public class ExampleMod implements ModInitializer {
     
@@ -14,6 +15,6 @@ public class ExampleMod implements ModInitializer {
 
         // Use Fabric to bootstrap the Common mod.
         Constants.LOG.info("Hello Fabric world!");
-        CommonClass.init();
+        Continental.init();
     }
 }
