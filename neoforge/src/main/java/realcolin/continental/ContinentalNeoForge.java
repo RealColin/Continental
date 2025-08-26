@@ -8,6 +8,7 @@ import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import realcolin.continental.densityfunction.GradientDist;
+import realcolin.continental.densityfunction.MultiMax;
 
 @Mod(Constants.MOD_ID)
 public class ContinentalNeoForge {
@@ -18,6 +19,7 @@ public class ContinentalNeoForge {
     public ContinentalNeoForge(IEventBus eventBus) {
         Continental.init();
 
+        DENSITY_FUNCTIONS.register("multimax", () -> MultiMax.CODEC);
         DENSITY_FUNCTIONS.register("gradient_dist", () -> GradientDist.CODEC);
         DENSITY_FUNCTIONS.register(eventBus);
     }

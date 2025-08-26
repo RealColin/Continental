@@ -12,7 +12,6 @@ public class GradientDist implements DensityFunction.SimpleFunction {
             Codec.INT.fieldOf("point_z").forGetter(src -> src.point_z),
             Codec.DOUBLE.fieldOf("min_val").forGetter(src -> src.min_val),
             Codec.DOUBLE.fieldOf("max_val").forGetter(src -> src.max_val),
-            DensityFunction.HOLDER_HELPER_CODEC.fieldOf("base").forGetter(src -> src.base),
             Codec.DOUBLE.fieldOf("dropoff").forGetter(src -> src.dropoff)
     ).apply(instance, GradientDist::new));
 
@@ -20,26 +19,21 @@ public class GradientDist implements DensityFunction.SimpleFunction {
     private final int point_z;
     private final double min_val;
     private final double max_val;
-    private final DensityFunction base;
     private final double dropoff;
 
-    public GradientDist(int point_x, int point_z, double min_val, double max_val, DensityFunction base, double dropoff) {
+    public GradientDist(int point_x, int point_z, double min_val, double max_val, double dropoff) {
         this.point_x = point_x;
         this.point_z = point_z;
         this.min_val = min_val;
         this.max_val = max_val;
-        this.base = base;
         this.dropoff = dropoff;
     }
 
     @Override
     public double compute(FunctionContext functionContext) {
         var dist = calcEuclidianDist(functionContext.blockX(), functionContext.blockZ());
-        var base_val = base.compute(functionContext);
 
-        var res = Math.clamp(base_val - (dropoff * dist), min_val, max_val);
-
-        return res;
+        return Math.max(max_val - (dropoff * dist), min_val);
     }
 
     private double calcEuclidianDist(int x, int z) {
@@ -58,7 +52,7 @@ public class GradientDist implements DensityFunction.SimpleFunction {
 
     @Override
     public DensityFunction mapAll(Visitor visitor) {
-        return new GradientDist(point_x, point_z, min_val, max_val, base.mapAll(visitor), dropoff);
+        return new GradientDist(point_x, point_z, min_val, max_val, dropoff);
     }
 
     @Override
