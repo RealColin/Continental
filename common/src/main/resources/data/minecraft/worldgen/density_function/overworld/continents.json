@@ -13,15 +13,15 @@
           "point_z": 0,
           "min_val": -10.0,
           "max_val": 1.0,
-          "dropoff": 0.001
+          "dropoff": 0.0004
         },
         {
           "type": "continental:gradient_dist",
-          "point_x": 4000,
-          "point_z": 4000,
+          "point_x": 8000,
+          "point_z": 3000,
           "min_val": -5.0,
           "max_val": 1.0,
-          "dropoff": 0.002
+          "dropoff": 0.00064
         }
       ]
     },
