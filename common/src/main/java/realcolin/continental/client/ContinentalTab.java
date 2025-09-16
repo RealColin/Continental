@@ -7,6 +7,7 @@ import net.minecraft.client.gui.layouts.LayoutSettings;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
+import realcolin.continental.world.continent.ContinentSettings;
 
 public class ContinentalTab extends GridLayoutTab {
     private final Screen parent;
@@ -68,6 +69,15 @@ public class ContinentalTab extends GridLayoutTab {
         row.addChild(avgContinentSize, cell);
         row.addChild(variationLabel, cell);
         row.addChild(continentSizeVariation, cell);
+    }
+
+    public ContinentSettings getSettings() {
+        long minCon = Math.round(minContinents.lerpedValue());
+        long maxCon = Math.round(maxContinents.lerpedValue());
+        long avgSize = Math.round(avgContinentSize.lerpedValue());
+        double var = Math.round(continentSizeVariation.lerpedValue());
+
+        return new ContinentSettings(minCon, maxCon, avgSize, var);
     }
 
     @Override

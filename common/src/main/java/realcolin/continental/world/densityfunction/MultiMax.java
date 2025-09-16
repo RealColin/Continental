@@ -1,4 +1,4 @@
-package realcolin.continental.densityfunction;
+package realcolin.continental.world.densityfunction;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -7,8 +7,8 @@ import net.minecraft.util.KeyDispatchDataCodec;
 import net.minecraft.world.level.levelgen.DensityFunction;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
+// TODO don't think I need this anymore either
 public class MultiMax implements DensityFunction.SimpleFunction {
 
     private static final Codec<List<DensityFunction>> LIST = DensityFunction.HOLDER_HELPER_CODEC.listOf();

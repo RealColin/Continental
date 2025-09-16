@@ -1,5 +1,9 @@
 package realcolin.continental.platform.services;
 
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.world.level.Level;
+
 public interface IPlatformHelper {
 
     /**
@@ -33,4 +37,7 @@ public interface IPlatformHelper {
 
         return isDevelopmentEnvironment() ? "development" : "production";
     }
+
+    // TODO thinking this is going to be unnecessary going forward..
+    ServerLevel get(ResourceKey<Level> level);
 }

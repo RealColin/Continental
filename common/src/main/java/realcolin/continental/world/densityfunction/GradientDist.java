@@ -1,4 +1,4 @@
-package realcolin.continental.densityfunction;
+package realcolin.continental.world.densityfunction;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
@@ -6,6 +6,7 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.KeyDispatchDataCodec;
 import net.minecraft.world.level.levelgen.DensityFunction;
 
+// TODO thinking I don't need this anymore..
 public class GradientDist implements DensityFunction.SimpleFunction {
     public static final MapCodec<GradientDist> CODEC = RecordCodecBuilder.mapCodec(instance -> instance.group(
             Codec.INT.fieldOf("point_x").forGetter(src -> src.point_x),

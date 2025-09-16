@@ -1,40 +1,4 @@
 {
-  "type": "minecraft:clamp",
-  "input": {
-    "type": "minecraft:add",
-    "argument1": {
-      "type": "continental:multimax",
-      "min_val": -10.0,
-      "max_val": 1.0,
-      "functions": [
-        {
-          "type": "continental:gradient_dist",
-          "point_x": 0,
-          "point_z": 0,
-          "min_val": -10.0,
-          "max_val": 1.0,
-          "dropoff": 0.0004
-        },
-        {
-          "type": "continental:gradient_dist",
-          "point_x": 8000,
-          "point_z": 3000,
-          "min_val": -5.0,
-          "max_val": 1.0,
-          "dropoff": 0.00064
-        }
-      ]
-    },
-    "argument2": {
-      "type": "minecraft:shifted_noise",
-      "noise": "minecraft:continentalness",
-      "shift_x": "minecraft:shift_x",
-      "shift_y": 0,
-      "shift_z": "minecraft:shift_z",
-      "xz_scale": 0.25,
-      "y_scale": 0
-    }
-  },
-  "min": -1.0,
-  "max": 1.0
+  "type": "continental:continent_sampler",
+  "dimension": "minecraft/overworld"
 }
