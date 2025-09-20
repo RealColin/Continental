@@ -16,12 +16,6 @@ public class DataGeneration {
     private static final String PACK_FOLDER = "continental_generated";
 
     public static void createPack(Path path, ContinentSettings settings, long seed) throws IOException {
-        // TODO TEST PRINTING DELETE LATER
-        System.out.println("Path: " + path);
-        System.out.println("Min Continents: " + settings.minContinents());
-        System.out.println("Max Continents: " + settings.maxContinents());
-        System.out.println("Seed: " + seed);
-
         Path packRoot = path.resolve(PACK_FOLDER);
         if (Files.exists(packRoot)) {
             Constants.LOG.debug("Generated Continental datapack already exists");

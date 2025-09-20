@@ -1,9 +1,7 @@
 package realcolin.continental.mixin;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 import com.google.gson.JsonElement;
-import com.mojang.datafixers.kinds.Const;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
@@ -14,49 +12,26 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.tabs.Tab;
 import net.minecraft.client.gui.components.tabs.TabManager;
 import net.minecraft.client.gui.components.tabs.TabNavigationBar;
-import net.minecraft.client.gui.screens.ConfirmScreen;
-import net.minecraft.client.gui.screens.GenericMessageScreen;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.screens.packs.PackSelectionScreen;
 import net.minecraft.client.gui.screens.worldselection.*;
-import net.minecraft.core.LayeredRegistryAccess;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceKey;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.RegistryLayer;
-import net.minecraft.server.ReloadableServerResources;
 import net.minecraft.server.WorldLoader;
-import net.minecraft.server.packs.repository.Pack;
 import net.minecraft.server.packs.repository.PackRepository;
-import net.minecraft.server.packs.resources.ResourceProvider;
 import net.minecraft.world.level.DataPackConfig;
-import net.minecraft.world.level.LevelSettings;
 import net.minecraft.world.level.WorldDataConfiguration;
-import net.minecraft.world.level.dimension.LevelStem;
 import net.minecraft.world.level.levelgen.*;
-import net.minecraft.world.level.storage.LevelResource;
-import net.minecraft.world.level.storage.LevelStorageSource;
-import net.minecraft.world.level.storage.PrimaryLevelData;
-import net.minecraft.world.level.storage.WorldData;
-import org.checkerframework.checker.units.qual.A;
-import org.lwjgl.system.CallbackI;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
 import org.spongepowered.asm.mixin.Unique;
-import org.spongepowered.asm.mixin.gen.Accessor;
 import org.spongepowered.asm.mixin.gen.Invoker;
 import org.spongepowered.asm.mixin.injection.*;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
-import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
-import org.spongepowered.asm.mixin.injection.callback.LocalCapture;
 import realcolin.continental.Constants;
 import realcolin.continental.client.ContinentalTab;
 import realcolin.continental.data.DataGeneration;
 import realcolin.continental.world.continent.ContinentSettings;
-import realcolin.continental.world.densityfunction.ContinentSampler;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -111,22 +86,20 @@ public abstract class MixinCreateWorldScreen extends Screen {
     @Inject(method = "onCreate", at = @At("HEAD"), cancellable = true)
     private void onCreateHead(CallbackInfo ci) {
         if (isReentry) return;
-
         ci.cancel();
 
-        Constants.LOG.info("onCreateHead called");
+        Constants.LOG.info("Beginning pack creation");
 
         var pair = getDataPackSelectionSettings(uiState.getSettings().dataConfiguration());
         var dir = pair.getFirst();
 
-//        Path dir = getOrCreateTempDataPackDir();
-        Constants.LOG.info("Temp pack directory: " + dir);
-
+        /* Get the seed/settings and generate the files */
         long seed = uiState.getSettings().options().seed();
 
         var settings = new ContinentSettings(5, 7, 5000, 0.250);
         for (var tab : tabNavigationBar.getTabs()) {
             if (tab instanceof ContinentalTab ct) {
+                Constants.LOG.debug("Got settings from Continental tab");
                 settings = ct.getSettings();
                 break;
             }
@@ -138,34 +111,25 @@ public abstract class MixinCreateWorldScreen extends Screen {
             Constants.LOG.error("Failed to generate continents pack in temp directory", e);
         }
 
+        /* Make sure the files are properly loaded as a datapack*/
         var repo = pair.getSecond();
         repo.reload();
 
         if (repo.addPack("file/continental_generated")) {
-            repo.setSelected(Lists.reverse(repo.getSelectedPacks().stream().toList()).stream().map(Pack::getId).collect(ImmutableList.toImmutableList()));
-            for (var whatever : repo.getSelectedIds()) {
-                System.out.println(whatever);
-            }
             var selected = repo.getSelectedIds().stream().toList();
             var unSelected = repo.getAvailableIds().stream().filter((x) -> !selected.contains(x)).collect(ImmutableList.toImmutableList());
             var wdc = new WorldDataConfiguration(new DataPackConfig(selected, unSelected), this.uiState.getSettings().dataConfiguration().enabledFeatures());
-            // TODO use access widener to make this public - i think this will do the trick
-            // this.uiState.tryUpdateDataConfiguration(wdc);
-            applyPacks(repo, wdc, () -> {
-                isReentry = true;
-                onCreate();
-                isReentry = false;
-                System.out.println("REENTRY IS NOW FALSE");
-            }, (Throwable err) -> {
-                System.out.println("VERY SCARY SAR");
-            });
+            applyPacks(repo, wdc, this::recall, (Throwable err) -> Constants.LOG.error(String.valueOf(err)));
 
         } else {
-            isReentry = true;
-            onCreate();
-            isReentry = false;
+            recall();
         }
-        Constants.LOG.info("DONE WITH onCreateHead");
+    }
+
+    private void recall() {
+        isReentry = true;
+        onCreate();
+        isReentry = false;
     }
 
     @SuppressWarnings("unchecked")

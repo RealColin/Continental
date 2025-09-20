@@ -5,8 +5,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.level.levelgen.DensityFunction;
 
 public class Continent {
-
-
     private final int x;
     private final int z;
     private final int radius;

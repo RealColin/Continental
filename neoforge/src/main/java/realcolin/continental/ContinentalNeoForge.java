@@ -24,7 +24,6 @@ public class ContinentalNeoForge {
     private static final DeferredRegister<MapCodec<? extends DensityFunction>> DENSITY_FUNCTIONS =
             DeferredRegister.create(BuiltInRegistries.DENSITY_FUNCTION_TYPE.key(), Constants.MOD_ID);
 
-
     public ContinentalNeoForge(IEventBus eventBus) {
         Continental.init();
 
@@ -34,26 +33,9 @@ public class ContinentalNeoForge {
         DENSITY_FUNCTIONS.register(eventBus);
 
         eventBus.addListener(ContinentalNeoForge::registerData);
-
-        NeoForge.EVENT_BUS.addListener(ContinentalNeoForge::onServerStarted);
-
-//        NeoForge.EVENT_BUS.addListener(ContinentalNeoForge::onLevelLoad);
     }
 
     public static void registerData(DataPackRegistryEvent.NewRegistry event) {
         event.dataPackRegistry(ContinentalRegistries.CONTINENTS, Continents.DIRECT_CODEC);
-    }
-
-    public static void onServerStarted(ServerStartedEvent e) {
-        var server = e.getServer();
-        var level = server.overworld();
-
-        var router = level.getChunkSource().randomState().router();
-        var sampler = router.continents();
-
-        System.out.println(sampler.compute(new DensityFunction.SinglePointContext(1325, 24, 130)));
-
-//        var nsReg = level.registryAccess().lookupOrThrow(Registries.NOISE_SETTINGS);
-//        var nsKey = nsReg.getResourceKey(level.)
     }
 }
