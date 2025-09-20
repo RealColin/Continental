@@ -6,7 +6,7 @@ import net.minecraft.client.gui.layouts.GridLayout;
 import net.minecraft.client.gui.layouts.LayoutSettings;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-import net.minecraft.util.Mth;
+import org.jetbrains.annotations.NotNull;
 import realcolin.continental.world.continent.ContinentSettings;
 
 public class ContinentalTab extends GridLayoutTab {
@@ -81,7 +81,7 @@ public class ContinentalTab extends GridLayoutTab {
     }
 
     @Override
-    public Component getTabTitle() {
+    public @NotNull Component getTabTitle() {
         return Component.literal("Continental");
     }
 }

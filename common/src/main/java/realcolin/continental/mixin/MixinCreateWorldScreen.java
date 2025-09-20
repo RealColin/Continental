@@ -53,7 +53,7 @@ public abstract class MixinCreateWorldScreen extends Screen {
     @Shadow abstract Pair<Path, PackRepository> getDataPackSelectionSettings(WorldDataConfiguration worldDataConfiguration);
 
     @Invoker("createDefaultLoadConfig")
-    static WorldLoader.InitConfig createDefaultLoadConfig(PackRepository repo, WorldDataConfiguration cfg) {
+    static WorldLoader.InitConfig createDefaultLoadConfig(PackRepository ignoredRepo, WorldDataConfiguration ignoredCfg) {
         throw new AssertionError(); // Mixin rewrites this
     }
 
@@ -96,6 +96,7 @@ public abstract class MixinCreateWorldScreen extends Screen {
         /* Get the seed/settings and generate the files */
         long seed = uiState.getSettings().options().seed();
 
+        // TODO do this better
         var settings = new ContinentSettings(5, 7, 5000, 0.250);
         for (var tab : tabNavigationBar.getTabs()) {
             if (tab instanceof ContinentalTab ct) {
@@ -132,7 +133,7 @@ public abstract class MixinCreateWorldScreen extends Screen {
         isReentry = false;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings({"unchecked", "rawtypes"})
     private void applyPacks(PackRepository repo, WorldDataConfiguration wdc, Runnable onSuccess, Consumer<Throwable> onFail) {
         var initConfig = createDefaultLoadConfig(repo, wdc);
         CompletableFuture future = WorldLoader.load(initConfig, (context) -> {
@@ -145,7 +146,7 @@ public abstract class MixinCreateWorldScreen extends Screen {
                 DynamicOps<JsonElement> dynamicops = worldcreationcontext.worldgenLoadContext().createSerializationContext(JsonOps.INSTANCE);
                 DataResult<JsonElement> dataresult = WorldGenSettings.encode(dynamicops, worldcreationcontext.options(), worldcreationcontext.selectedDimensions()).setLifecycle(Lifecycle.stable());
                 DynamicOps<JsonElement> dynamicops1 = context.datapackWorldgen().createSerializationContext(JsonOps.INSTANCE);
-                WorldGenSettings worldgensettings = (WorldGenSettings)dataresult.flatMap((p_232895_) -> WorldGenSettings.CODEC.parse(dynamicops1, p_232895_)).getOrThrow((p_337413_) -> new IllegalStateException("Error parsing worldgen settings after loading data packs: " + p_337413_));
+                WorldGenSettings worldgensettings = dataresult.flatMap((p_232895_) -> WorldGenSettings.CODEC.parse(dynamicops1, p_232895_)).getOrThrow((p_337413_) -> new IllegalStateException("Error parsing worldgen settings after loading data packs: " + p_337413_));
                 return new WorldLoader.DataLoadOutput(new DataPackReloadCookie(worldgensettings, context.dataConfiguration()), context.datapackDimensions());
             }
         }, (resManager, reloadableRes, regAccess, cookie) -> {

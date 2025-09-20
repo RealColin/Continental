@@ -6,10 +6,10 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.util.Mth;
 
 public class Slider extends AbstractSliderButton {
-    private double min;
-    private double max;
+    private final double min;
+    private final double max;
     private Callback callback;
-    private boolean integer;
+    private final boolean integer;
 
     public Slider(int width, int height, double value, double min, double max, Callback callback, boolean integer) {
         super(-1, -1, width, height, CommonComponents.EMPTY, 0.0);
@@ -31,7 +31,7 @@ public class Slider extends AbstractSliderButton {
         if (integer)
             txt = String.valueOf(Math.round(lerpedValue()));
         else
-            txt = String.valueOf(String.format("%.3f", lerpedValue()));
+            txt = String.format("%.3f", lerpedValue());
 
         return Component.literal(txt);
     }

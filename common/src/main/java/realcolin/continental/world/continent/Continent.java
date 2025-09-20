@@ -1,7 +1,5 @@
 package realcolin.continental.world.continent;
 
-import com.mojang.serialization.Codec;
-import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.world.level.levelgen.DensityFunction;
 
 public class Continent {

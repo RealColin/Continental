@@ -1,9 +1,6 @@
 package realcolin.continental.data;
 
 import net.minecraft.SharedConstants;
-import net.minecraft.data.DataGenerator;
-import net.minecraft.data.DataGenerator.PackGenerator;
-import net.minecraft.data.PackOutput;
 import net.minecraft.server.packs.PackType;
 import realcolin.continental.Constants;
 import realcolin.continental.world.continent.ContinentSettings;
@@ -63,12 +60,5 @@ public class DataGeneration {
             Constants.LOG.error("Failed to generate datapack at {}", packRoot, e);
         }
 
-    }
-
-    public static DataGenerator makePack(Path dataGenPath, Path dataGenOutputPath, String name) {
-        DataGenerator gen = new DataGenerator(dataGenPath, SharedConstants.getCurrentVersion(), true);
-        //PackGenerator packGenerator = gen.new PackGenerator(true, name, new PackOutput(dataGenOutputPath));
-
-        return gen;
     }
 }
