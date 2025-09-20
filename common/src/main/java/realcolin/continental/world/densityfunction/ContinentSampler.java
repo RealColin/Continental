@@ -1,6 +1,7 @@
 package realcolin.continental.world.densityfunction;
 
 import com.mojang.serialization.MapCodec;
+import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.server.level.ServerLevel;
@@ -11,7 +12,7 @@ import net.minecraft.world.level.levelgen.DensityFunction;
 import realcolin.continental.platform.Services;
 import realcolin.continental.platform.services.IPlatformHelper;
 import realcolin.continental.world.continent.Continent;
-import realcolin.continental.world.continent.ContinentsSavedData;
+import realcolin.continental.world.continent.Continents;
 
 import java.util.List;
 import java.util.function.Supplier;
@@ -19,41 +20,27 @@ import java.util.function.Supplier;
 public class ContinentSampler implements DensityFunction.SimpleFunction {
 
     public static final MapCodec<ContinentSampler> CODEC =
-            ResourceKey.codec(Registries.DIMENSION).fieldOf("dimension")
-                    .xmap(ContinentSampler::new, a -> a.levelKey);
+            Continents.CODEC.fieldOf("continents")
+                    .xmap(ContinentSampler::new, src -> src.continents);
 
-    private final ResourceKey<Level> levelKey;
-    private transient ContinentsSavedData cached;
 
-    public ContinentSampler(ResourceKey<Level> levelKey) {
-        this.levelKey = levelKey;
+    private final Holder<Continents> continents;
+
+
+    public ContinentSampler(Holder<Continents> continents) {
+        this.continents = continents;
     }
 
     @Override
     public double compute(FunctionContext functionContext) {
-//        var level = Services.PLATFORM.get(levelKey);
-//        var saved = ContinentsSavedData.get(level);
-        if (cached == null) {
-//            System.out.println("UM THIS SHOULDN'T BE NULL");
-        }
-
+//        System.out.println("computed");
 
         return -0.7;
     }
 
-    public void bind(ContinentsSavedData data) {
-        System.out.println("BOUND");
-        this.cached = data;
-    }
-
-    public ResourceKey<Level> level() {
-        return levelKey;
-    }
-
-
     @Override
     public double minValue() {
-        return -1.2;
+        return -100.2;
     }
 
     @Override

@@ -1,6 +1,9 @@
 package realcolin.continental.data;
 
 import net.minecraft.SharedConstants;
+import net.minecraft.data.DataGenerator;
+import net.minecraft.data.DataGenerator.PackGenerator;
+import net.minecraft.data.PackOutput;
 import net.minecraft.server.packs.PackType;
 import realcolin.continental.Constants;
 import realcolin.continental.world.continent.ContinentSettings;
@@ -19,7 +22,7 @@ public class DataGeneration {
         System.out.println("Max Continents: " + settings.maxContinents());
         System.out.println("Seed: " + seed);
 
-        Path packRoot = path.getParent().resolve("datapacks").resolve(PACK_FOLDER);
+        Path packRoot = path.resolve(PACK_FOLDER);
         if (Files.exists(packRoot)) {
             Constants.LOG.debug("Generated Continental datapack already exists");
             return;
@@ -51,9 +54,27 @@ public class DataGeneration {
             Files.createDirectories(dir);
             Files.writeString(dir.resolve("overworld.json"), continents);
 
+            String densityFunc = """
+                    {
+                      "type": "continental:continent_sampler",
+                      "continents": "continental:overworld"
+                    }
+                    """;
+
+            Path dir2 = packRoot.resolve("data/minecraft/worldgen/density_function/overworld");
+            Files.createDirectories(dir2);
+            Files.writeString(dir2.resolve("continents.json"), densityFunc);
+
         } catch (IOException e) {
             Constants.LOG.error("Failed to generate datapack at {}", packRoot, e);
         }
 
+    }
+
+    public static DataGenerator makePack(Path dataGenPath, Path dataGenOutputPath, String name) {
+        DataGenerator gen = new DataGenerator(dataGenPath, SharedConstants.getCurrentVersion(), true);
+        //PackGenerator packGenerator = gen.new PackGenerator(true, name, new PackOutput(dataGenOutputPath));
+
+        return gen;
     }
 }
