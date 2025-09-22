@@ -6,6 +6,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.resources.RegistryFileCodec;
 import realcolin.continental.ContinentalRegistries;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Continents {
@@ -26,5 +27,18 @@ public class Continents {
     private final List<Continent> continents;
     public Continents(List<Continent> continents) {
         this.continents = continents;
+    }
+
+    // TODO implement actual generation algorithm
+    public static Continents generate(ContinentSettings settings, long seed) {
+        var list = new ArrayList<Continent>();
+
+        list.add(new Continent(0, 0, 1000));
+
+        return new Continents(list);
+    }
+
+    public List<Continent> get() {
+        return continents;
     }
 }

@@ -4,6 +4,7 @@ import net.minecraft.SharedConstants;
 import net.minecraft.server.packs.PackType;
 import realcolin.continental.Constants;
 import realcolin.continental.world.continent.ContinentSettings;
+import realcolin.continental.world.continent.Continents;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -22,43 +23,57 @@ public class DataGeneration {
         try {
             Files.createDirectories(packRoot);
 
-            int packFormat = SharedConstants.getCurrentVersion().packVersion(PackType.SERVER_DATA);
-            String mcmeta = """
-            { "pack": { "pack_format": %d, "description": "Continental (generated)" } }
-            """.formatted(packFormat);
-            Files.writeString(packRoot.resolve("pack.mcmeta"), mcmeta);
-
-            // TODO remove temp continents
-            String continents = """
-                    {
-                        "continents": [
-                            {
-                                "x": 0,
-                                "z": 0,
-                                "radius": 1000
-                            }
-                        ]
-                    }
-                    """;
-
-            Path dir = packRoot.resolve("data/" + Constants.MOD_ID + "/worldgen/continents");
-            Files.createDirectories(dir);
-            Files.writeString(dir.resolve("overworld.json"), continents);
-
-            String densityFunc = """
-                    {
-                      "type": "continental:continent_sampler",
-                      "continents": "continental:overworld"
-                    }
-                    """;
-
-            Path dir2 = packRoot.resolve("data/minecraft/worldgen/density_function/overworld");
-            Files.createDirectories(dir2);
-            Files.writeString(dir2.resolve("continents.json"), densityFunc);
+            writeMCMeta(packRoot);
+            writeOverworldDensityFunction(packRoot);
+            var continents = Continents.generate(settings, seed);
+            writeContinents(packRoot, continents);
 
         } catch (IOException e) {
             Constants.LOG.error("Failed to generate datapack at {}", packRoot, e);
         }
 
+    }
+
+    private static void writeMCMeta(Path path) throws IOException {
+        int packFormat = SharedConstants.getCurrentVersion().packVersion(PackType.SERVER_DATA);
+        String str = """
+                {
+                    "pack": {
+                        "pack_format": %d,
+                        "description": "Continental (generated)"
+                    }
+                }
+                """.formatted(packFormat);
+        Files.writeString(path.resolve("pack.mcmeta"), str);
+    }
+
+    private static void writeOverworldDensityFunction(Path path) throws IOException {
+        String func = """
+                {
+                    "type": "continental:continent_sampler",
+                    "continents": "continental:overworld"
+                }
+                """;
+        var filePath = path.resolve("data/minecraft/worldgen/density_function/overworld");
+        Files.createDirectories(filePath);
+        Files.writeString(filePath.resolve("continents.json"), func);
+    }
+
+    private static void writeContinents(Path path, Continents continents) throws IOException {
+        StringBuilder continentsString = new StringBuilder("{ \"continents\": [");
+
+        for (var continent : continents.get()) {
+            continentsString.append("{ \"x\": %d,".formatted(continent.getX()));
+            continentsString.append("\"z\": %d,".formatted(continent.getZ()));
+            continentsString.append("\"radius\": %d}".formatted(continent.getRadius()));
+            if (!continent.equals(continents.get().getLast()))
+                continentsString.append(",");
+        }
+        continentsString.append("]}");
+
+        var str = continentsString.toString();
+        var filePath = path.resolve("data/" + Constants.MOD_ID + "/worldgen/continents");
+        Files.createDirectories(filePath);
+        Files.writeString(filePath.resolve("overworld.json"), str);
     }
 }
