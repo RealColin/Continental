@@ -60,16 +60,16 @@ public class DataGeneration {
     }
 
     private static void writeContinents(Path path, Continents continents) throws IOException {
-        StringBuilder continentsString = new StringBuilder("{ \"continents\": [");
+        StringBuilder continentsString = new StringBuilder("{\n\t\"continents\": [\n");
 
         for (var continent : continents.get()) {
-            continentsString.append("{ \"x\": %d,".formatted(continent.getX()));
-            continentsString.append("\"z\": %d,".formatted(continent.getZ()));
-            continentsString.append("\"radius\": %d}".formatted(continent.getRadius()));
+            continentsString.append("\t{\n\t\t\"x\": %d,\n".formatted(continent.getX()));
+            continentsString.append("\t\t\"z\": %d,\n".formatted(continent.getZ()));
+            continentsString.append("\t\t\"radius\": %d\n\t}".formatted(continent.getRadius()));
             if (!continent.equals(continents.get().getLast()))
-                continentsString.append(",");
+                continentsString.append(",\n");
         }
-        continentsString.append("]}");
+        continentsString.append("\n\t]\n}");
 
         var str = continentsString.toString();
         var filePath = path.resolve("data/" + Constants.MOD_ID + "/worldgen/continents");
