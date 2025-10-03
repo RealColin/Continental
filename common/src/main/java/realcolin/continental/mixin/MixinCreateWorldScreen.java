@@ -97,7 +97,7 @@ public abstract class MixinCreateWorldScreen extends Screen {
         long seed = uiState.getSettings().options().seed();
 
         // TODO do this better
-        var settings = new ContinentSettings(5, 7, 5000, 0.250);
+        var settings = new ContinentSettings(5, 7, 5000, 0.250, 0.500, 0.500);
         for (var tab : tabNavigationBar.getTabs()) {
             if (tab instanceof ContinentalTab ct) {
                 Constants.LOG.debug("Got settings from Continental tab");
