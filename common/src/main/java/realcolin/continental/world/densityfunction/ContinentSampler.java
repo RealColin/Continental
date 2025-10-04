@@ -8,6 +8,8 @@ import net.minecraft.world.level.levelgen.DensityFunction;
 import org.jetbrains.annotations.NotNull;
 import realcolin.continental.world.continent.Continents;
 
+import java.awt.*;
+
 public class ContinentSampler implements DensityFunction.SimpleFunction {
 
     public static final MapCodec<ContinentSampler> CODEC =
@@ -27,20 +29,7 @@ public class ContinentSampler implements DensityFunction.SimpleFunction {
 
     @Override
     public double compute(@NotNull FunctionContext functionContext) {
-        var continents = continentsHolder.value();
-
-        double maxVal = Double.NEGATIVE_INFINITY;
-
-        for (var continent : continents.get()) {
-            var dist = continent.distTo(functionContext);
-            var val = 1.0 - ((1.2 / continent.getRadius()) * dist);
-
-            if (val > maxVal) {
-                maxVal = val;
-            }
-        }
-
-        return Math.max(maxVal, -1.0);
+        return continentsHolder.value().compute(new Point(functionContext.blockX(), functionContext.blockZ()));
     }
 
     @Override

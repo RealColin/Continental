@@ -1,6 +1,6 @@
 package realcolin.continental.world.continent;
 
-import net.minecraft.world.level.levelgen.DensityFunction;
+import java.awt.*;
 
 public class Continent {
     private final int x;
@@ -13,8 +13,8 @@ public class Continent {
         this.radius = radius;
     }
 
-    public double distTo(DensityFunction.FunctionContext context) {
-        return Math.sqrt(Math.pow(context.blockX() - x, 2) + Math.pow(context.blockZ() - z, 2));
+    public double distTo(Point point) {
+        return Math.sqrt(Math.pow(point.getX() - x, 2) + Math.pow(point.getY() - z, 2));
     }
 
     public int getX() {

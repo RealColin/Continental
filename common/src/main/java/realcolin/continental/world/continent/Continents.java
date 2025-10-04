@@ -8,6 +8,7 @@ import realcolin.continental.Constants;
 import realcolin.continental.ContinentalRegistries;
 import realcolin.continental.util.Voronoi;
 
+import java.awt.*;
 import java.awt.geom.Point2D;
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +36,20 @@ public class Continents {
 
     public List<Continent> get() {
         return continents;
+    }
+
+    public double compute(Point point) {
+        double maxVal = Double.NEGATIVE_INFINITY;
+
+        for (var c : continents) {
+            var dist = c.distTo(point);
+            var val = 1.0 - ((1.2 / c.getRadius()) * dist);
+
+            if (val > maxVal)
+                maxVal = val;
+        }
+
+        return Math.max(-1.0, maxVal);
     }
 
     public static Continents generate(ContinentSettings settings, long seed) {
