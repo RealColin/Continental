@@ -16,7 +16,7 @@ public class DataGeneration {
     public static void createPack(Path path, ContinentSettings settings, long seed) throws IOException {
         Path packRoot = path.resolve(PACK_FOLDER);
         if (Files.exists(packRoot)) {
-            Constants.LOG.debug("Generated Continental datapack already exists");
+            Constants.LOG.info("Generated Continental datapack already exists.");
             return;
         }
 
@@ -31,7 +31,6 @@ public class DataGeneration {
         } catch (IOException e) {
             Constants.LOG.error("Failed to generate datapack at {}", packRoot, e);
         }
-
     }
 
     private static void writeMCMeta(Path path) throws IOException {
@@ -51,7 +50,16 @@ public class DataGeneration {
         String func = """
                 {
                     "type": "continental:continent_sampler",
-                    "continents": "continental:overworld"
+                    "continents": "continental:overworld",
+                    "base": {
+                        "type": "minecraft:shifted_noise",
+                        "noise": "minecraft:continentalness",
+                        "shift_x": "minecraft:shift_x",
+                        "shift_y": 0,
+                        "shift_z": "minecraft:shift_z",
+                        "xz_scale": 0.25,
+                        "y_scale": 0
+                    }
                 }
                 """;
         var filePath = path.resolve("data/minecraft/worldgen/density_function/overworld");

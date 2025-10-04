@@ -1,6 +1,7 @@
 package realcolin.continental.world.densityfunction;
 
 import com.mojang.serialization.MapCodec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.core.Holder;
 import net.minecraft.util.KeyDispatchDataCodec;
 import net.minecraft.world.level.levelgen.DensityFunction;
@@ -10,21 +11,36 @@ import realcolin.continental.world.continent.Continents;
 public class ContinentSampler implements DensityFunction.SimpleFunction {
 
     public static final MapCodec<ContinentSampler> CODEC =
-            Continents.CODEC.fieldOf("continents")
-                    .xmap(ContinentSampler::new, src -> src.continents);
+            RecordCodecBuilder.mapCodec(instance -> instance.group(
+                    Continents.CODEC.fieldOf("continents").forGetter(src -> src.continentsHolder),
+                    DensityFunction.HOLDER_HELPER_CODEC.fieldOf("base").forGetter(src -> src.base)
+            ).apply(instance, ContinentSampler::new));
 
 
-    private final Holder<Continents> continents;
+    private final Holder<Continents> continentsHolder;
+    private final DensityFunction base;
 
-
-    public ContinentSampler(Holder<Continents> continents) {
-        this.continents = continents;
+    public ContinentSampler(Holder<Continents> continentsHolder, DensityFunction base) {
+        this.continentsHolder = continentsHolder;
+        this.base = base;
     }
 
     @Override
     public double compute(@NotNull FunctionContext functionContext) {
+        var continents = continentsHolder.value();
 
-        return -0.7;
+        double maxVal = Double.NEGATIVE_INFINITY;
+
+        for (var continent : continents.get()) {
+            var dist = continent.distTo(functionContext);
+            var val = 1.0 - ((1.2 / continent.getRadius()) * dist);
+
+            if (val > maxVal) {
+                maxVal = val;
+            }
+        }
+
+        return Math.max(maxVal, -1.0);
     }
 
     @Override

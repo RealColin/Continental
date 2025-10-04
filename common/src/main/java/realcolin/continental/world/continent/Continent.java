@@ -13,7 +13,7 @@ public class Continent {
         this.radius = radius;
     }
 
-    private double distTo(DensityFunction.FunctionContext context) {
+    public double distTo(DensityFunction.FunctionContext context) {
         return Math.sqrt(Math.pow(context.blockX() - x, 2) + Math.pow(context.blockZ() - z, 2));
     }
 

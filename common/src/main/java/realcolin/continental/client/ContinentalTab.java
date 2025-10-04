@@ -1,17 +1,19 @@
 package realcolin.continental.client;
 
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.components.tabs.GridLayoutTab;
 import net.minecraft.client.gui.layouts.GridLayout;
 import net.minecraft.client.gui.layouts.LayoutSettings;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.gui.screens.worldselection.CreateWorldScreen;
 import net.minecraft.network.chat.Component;
 import org.jetbrains.annotations.NotNull;
 import realcolin.continental.world.continent.ContinentSettings;
 
 public class ContinentalTab extends GridLayoutTab {
-    private final Screen parent;
     private final Slider minContinents;
     private final Slider maxContinents;
     private final Slider avgContinentSize;
@@ -21,7 +23,6 @@ public class ContinentalTab extends GridLayoutTab {
 
     public ContinentalTab(Screen parent) {
         super(Component.literal("Continental"));
-        this.parent = parent;
 
         GridLayout.RowHelper row = this.layout.columnSpacing(10).rowSpacing(8).createRowHelper(2);
         LayoutSettings cell = row.newCellSettings();
@@ -85,6 +86,11 @@ public class ContinentalTab extends GridLayoutTab {
         spacingUniformity = new Slider(200, 20, 0.25, 0, 1.0, (s, v) -> v, false);
         spacingUniformity.setTooltip(Tooltip.create(Component.literal("How uniform the spacing between continents is. The higher the value, the more uniform the spacing.")));
 
+//        var ps = new PreviewScreen((CreateWorldScreen)parent, getSettings(), ((CreateWorldScreen) parent).getUiState().getSettings().options().seed());
+        var button = new Button.Builder(Component.literal("Open Preview Screen"),
+                (b) -> Minecraft.getInstance().setScreen(
+                        new PreviewScreen((CreateWorldScreen)parent, getSettings(), ((CreateWorldScreen) parent).getUiState().getSettings().options().seed())));
+
         row.addChild(minLabel, cell);
         row.addChild(minContinents, cell);
         row.addChild(maxLabel, cell);
@@ -97,6 +103,7 @@ public class ContinentalTab extends GridLayoutTab {
         row.addChild(continentSpacing, cell);
         row.addChild(uniformityLabel, cell);
         row.addChild(spacingUniformity, cell);
+        row.addChild(button.build(), cell);
     }
 
     public ContinentSettings getSettings() {
