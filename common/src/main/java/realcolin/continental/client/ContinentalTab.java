@@ -107,8 +107,8 @@ public class ContinentalTab extends GridLayoutTab {
     }
 
     public ContinentSettings getSettings() {
-        long minCon = Math.round(minContinents.lerpedValue());
-        long maxCon = Math.round(maxContinents.lerpedValue());
+        int minCon = (int)Math.round(minContinents.lerpedValue());
+        int maxCon = (int)Math.round(maxContinents.lerpedValue());
         long avgSize = Math.round(avgContinentSize.lerpedValue());
         double var = continentSizeVariation.lerpedValue();
         double spacing = continentSpacing.lerpedValue();
