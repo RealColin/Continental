@@ -66,11 +66,13 @@ public class Continents {
 
         var rand = new Random(randRadiiSeed);
         var stddev = settings.variation() * settings.meanSize();
+        var minRadius = 0.2 * settings.meanSize(); // TODO put the 0.2 in Constants maybe?
+        var maxRadius = 1.8 * settings.meanSize(); // TODO put the 1.8 in Constants maybe?
 
         var list = new ArrayList<Continent>();
 
         for (var p : positions) {
-            var radius = rand.nextGaussian(settings.meanSize(), stddev);
+            var radius = Math.clamp(rand.nextGaussian(settings.meanSize(), stddev), minRadius, maxRadius);
             var con = new Continent((int)p.getX(), (int)p.getY(), (int) Math.round(radius));
             list.add(con);
         }
@@ -82,9 +84,10 @@ public class Continents {
         var rand = new Random(firstSeed);
         var numContinents = rand.nextInt(settings.minContinents(), settings.maxContinents() + 1);
 
+        var stddev = settings.variation() * settings.meanSize();
         var easedSpacing = Math.pow(settings.spacing(), Constants.EASING_EXP);
         var coverage = ((1 - easedSpacing) * Constants.LAND_COVERAGE_MAX) + (easedSpacing * Constants.LAND_COVERAGE_MIN);
-        var area = (numContinents * Math.PI * settings.meanSize() * settings.meanSize()) / coverage;
+        var area = (numContinents * Math.PI * (settings.meanSize() * settings.meanSize() + stddev * stddev)) / coverage;
         int sideLength = (int)Math.round(Math.sqrt(area));
 
         int half = sideLength / 2;
@@ -94,10 +97,19 @@ public class Continents {
         rand = new Random(secondSeed);
         var points = new ArrayList<Point2D>();
 
+        // TODO change this to generate between 0-100 and then interpolate to fit the lower-upper range
+        // TODO that way, changing the "spacing" value doesn't affect the position of the continents
+//        for (int i = 0; i < numContinents; i++) {
+//            int x = rand.nextInt(lower, upper);
+//            int z = rand.nextInt(lower, upper);
+//            points.add(new Point2D.Double(x, z));
+//        }
         for (int i = 0; i < numContinents; i++) {
-            int x = rand.nextInt(lower, upper);
-            int z = rand.nextInt(lower, upper);
-            points.add(new Point2D.Double(x, z));
+            var x = rand.nextDouble(0, 101);
+            var z = rand.nextDouble(0, 101);
+            var xi = lower + (x / 100.0) * (upper - lower);
+            var zi = lower + (z / 100.0) * (upper - lower);
+            points.add(new Point2D.Double(xi, zi));
         }
 
         var bounds = new ArrayList<Point2D>();
