@@ -68,16 +68,43 @@ public class DataGeneration {
     }
 
     private static void writeContinents(Path path, Continents continents) throws IOException {
-        StringBuilder continentsString = new StringBuilder("{\n\t\"continents\": [\n");
+        StringBuilder continentsString = new StringBuilder();
+
+        continentsString.append(
+                """
+                {
+                    "continents": [
+                """);
 
         for (var continent : continents.get()) {
-            continentsString.append("\t{\n\t\t\"x\": %d,\n".formatted(continent.getX()));
-            continentsString.append("\t\t\"z\": %d,\n".formatted(continent.getZ()));
-            continentsString.append("\t\t\"radius\": %d\n\t}".formatted(continent.getRadius()));
-            if (!continent.equals(continents.get().getLast()))
-                continentsString.append(",\n");
+            continentsString.append(
+                    """
+                            {
+                                "x": %d,
+                                "z": %d,
+                                "radius": %d,
+                                "points": [
+                    """.formatted(continent.getX(), continent.getZ(), continent.getRadius()));
+            for (var point : continent.getShape()) {
+                continentsString.append(
+                        """
+                                        {
+                                            "x": %f,
+                                            "z": %f
+                                        },
+                        """.formatted(point.getX(), point.getY()));
+                if (point.equals(continent.getShape().getLast()))
+                    continentsString.deleteCharAt(continentsString.length() - 2);
+            }
+            continentsString.append(
+                    """
+                                ]
+                            },
+                    """);
+            if (continent.equals(continents.get().getLast()))
+                continentsString.deleteCharAt(continentsString.length() - 2);
         }
-        continentsString.append("\n\t]\n}");
+        continentsString.append("\t]\n}");
 
         var str = continentsString.toString();
         var filePath = path.resolve("data/" + Constants.MOD_ID + "/worldgen/continents");

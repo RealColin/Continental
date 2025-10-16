@@ -15,11 +15,18 @@ import java.util.List;
 import java.util.Random;
 
 public class Continents {
+    private static final Codec<List<Point2D.Double>> P_CODEC =
+            RecordCodecBuilder.<Point2D.Double>create(instance -> instance.group(
+                    Codec.DOUBLE.fieldOf("x").forGetter(Point2D.Double::getX),
+                    Codec.DOUBLE.fieldOf("z").forGetter(Point2D.Double::getY)
+            ).apply(instance, Point2D.Double::new)).listOf();
+
     private static final Codec<Continent> C_CODEC =
             RecordCodecBuilder.create(instance -> instance.group(
                     Codec.INT.fieldOf("x").forGetter(Continent::getX),
                     Codec.INT.fieldOf("z").forGetter(Continent::getZ),
-                    Codec.INT.fieldOf("radius").forGetter(Continent::getRadius)
+                    Codec.INT.fieldOf("radius").forGetter(Continent::getRadius),
+                    P_CODEC.fieldOf("points").forGetter(Continent::getShape)
             ).apply(instance, Continent::new));
 
     public static final Codec<Continents> DIRECT_CODEC =
@@ -42,11 +49,8 @@ public class Continents {
         double maxVal = Double.NEGATIVE_INFINITY;
 
         for (var c : continents) {
-            var dist = c.distTo(point);
-            var val = 1.0 - ((1.2 / c.getRadius()) * dist);
-
-            if (val > maxVal)
-                maxVal = val;
+            if (c.isPointInside(point))
+                maxVal = 1.0;
         }
 
         return Math.max(-1.0, maxVal);
@@ -58,6 +62,7 @@ public class Continents {
         var numConsSeed = seeds[0];
         var randPointsSeed = seeds[1];
         var randRadiiSeed = seeds[2];
+        var continentSeeder = seeds[3];
 
         /* Get the Continent positions */
         var positions = getContinentPositions(settings, numConsSeed, randPointsSeed);
@@ -65,6 +70,7 @@ public class Continents {
         /* Get the radius for each Continent */
 
         var rand = new Random(randRadiiSeed);
+        var conRand = new Random(continentSeeder);
         var stddev = settings.variation() * settings.meanSize();
         var minRadius = 0.2 * settings.meanSize(); // TODO put the 0.2 in Constants maybe?
         var maxRadius = 1.8 * settings.meanSize(); // TODO put the 1.8 in Constants maybe?
@@ -72,12 +78,111 @@ public class Continents {
         var list = new ArrayList<Continent>();
 
         for (var p : positions) {
-            var radius = Math.clamp(rand.nextGaussian(settings.meanSize(), stddev), minRadius, maxRadius);
-            var con = new Continent((int)p.getX(), (int)p.getY(), (int) Math.round(radius));
+            int radius = (int)Math.round(Math.clamp(rand.nextGaussian(settings.meanSize(), stddev), minRadius, maxRadius));
+            var shape = getContinentShape(p, radius, conRand.nextLong());
+            var con = new Continent((int)p.getX(), (int)p.getY(), radius, shape);
             list.add(con);
         }
 
         return new Continents(list);
+    }
+
+
+    private static List<Point2D.Double> getContinentShape(Point2D center, int radius, long seed) {
+        var ret = getBasicContinentShape(center, radius, seed);
+        for (int i = 0; i < 4; i++) {
+            ret = chaikinStep(ret);
+        }
+        return ret;
+    }
+
+    private static List<Point2D.Double> chaikinStep(List<Point2D.Double> shape) {
+        var n = shape.size();
+        var t = 0.25; // default 0.25
+        var out = new ArrayList<Point2D.Double>();
+        for (int i = 0; i < n; i++) {
+            var a = shape.get(i);
+            var b = shape.get((i+1) % n);
+            var qx = (1 - t) * a.getX() + t * b.getX();
+            var qy = (1 - t)* a.getY() + t * b.getY();
+            var rx = t * a.getX() + (1 - t) * b.getX();
+            var ry = t * a.getY() + (1 - t) * b.getY();
+            out.add(new Point2D.Double(qx, qy));
+            out.add(new Point2D.Double(rx, ry));
+        }
+        return out;
+    }
+
+    private static List<Point2D.Double> getBasicContinentShape(Point2D center, int radius, long seed) {
+        int N = 36; // number of points to shape the continent
+        var roughness = 0.9; // variance between radii, increase to have less circular shaped continents
+        var minFrac = 0.25; // the smallest possible radius
+
+        var random = new Random(seed);
+
+        // get the angles in a randomly distributed way
+        var rotation = random.nextDouble() * Math.PI * 2.0; // between 0 and 2 PI
+        var theta = new double[N]; // angles
+        for (int i = 0; i < N; i++) {
+            theta[i] = rotation + (2.0 * Math.PI * i) / N;
+        }
+
+        var maxJitter = (Math.PI * 2.0 / N) * 0.25;
+        for (int i = 0; i < N; i++) {
+            var jitter = (random.nextDouble() * 2.0 - 1.0) * maxJitter;
+            theta[i] += jitter;
+        }
+
+        // get the radii using radial noise
+        var radii = new double[N];
+
+        int maxHarmonics = 6;
+        var baseAmp = 0.45 * roughness;
+        double decay = 0.55;
+
+        var phaseCos = new double[maxHarmonics];
+        var phaseSin = new double[maxHarmonics];
+        for (int k = 0; k < maxHarmonics; k++) {
+            phaseCos[k] = random.nextDouble() * Math.PI * 2.0;
+            phaseSin[k] = random.nextDouble() * Math.PI * 2.0;
+        }
+
+        for (int i = 0; i < N; i++) {
+            var t = theta[i];
+            var signal = 0.0;
+            var amp = baseAmp;
+            for (int k = 1; k <= maxHarmonics; k++) {
+                var ac = amp * (random.nextDouble() * 0.8 + 0.2);
+                var as = amp * (random.nextDouble() * 0.8 + 0.2);
+                signal += ac * Math.cos(k * t + phaseCos[k - 1]);
+                signal += as * Math.sin(k * t + phaseSin[k - 1]);
+                amp *= decay;
+            }
+
+            signal += (random.nextDouble() * 2.0 - 1.0) * 0.05 * roughness;
+            double r = radius * (1.0 + signal);
+            radii[i] = Math.max(minFrac * radius, r);
+        }
+
+        normalizeMeanRadius(radii, radius);
+
+        var poly = new ArrayList<Point2D.Double>();
+
+        for (int i = 0; i < N; i++) {
+            double x = center.getX() + radii[i] * Math.cos(theta[i]);
+            double y = center.getY() + radii[i] * Math.sin(theta[i]);
+            poly.add(new Point2D.Double(x, y));
+        }
+
+        return poly;
+    }
+
+    private static void normalizeMeanRadius(double[] r, double M) {
+        var sum = 0.0;
+        for (var v : r) sum += v;
+        var target = r.length * M;
+        var scale = target / sum;
+        for (int i = 0; i < r.length; i++) r[i] *= scale;
     }
 
     private static List<Point2D> getContinentPositions(ContinentSettings settings, long firstSeed, long secondSeed) {
@@ -97,13 +202,6 @@ public class Continents {
         rand = new Random(secondSeed);
         var points = new ArrayList<Point2D>();
 
-        // TODO change this to generate between 0-100 and then interpolate to fit the lower-upper range
-        // TODO that way, changing the "spacing" value doesn't affect the position of the continents
-//        for (int i = 0; i < numContinents; i++) {
-//            int x = rand.nextInt(lower, upper);
-//            int z = rand.nextInt(lower, upper);
-//            points.add(new Point2D.Double(x, z));
-//        }
         for (int i = 0; i < numContinents; i++) {
             var x = rand.nextDouble(0, 101);
             var z = rand.nextDouble(0, 101);
@@ -126,8 +224,9 @@ public class Continents {
     private static long[] getSeeds(long seed) {
         long seed1 = mix64(seed += GAMMA);
         long seed2 = mix64(seed += GAMMA);
-        long seed3 = mix64(seed + GAMMA);
-        return new long[]{seed1, seed2, seed3};
+        long seed3 = mix64(seed += GAMMA);
+        long seed4 = mix64(seed + GAMMA);
+        return new long[]{seed1, seed2, seed3, seed4};
     }
 
     private static long mix64(long z) {

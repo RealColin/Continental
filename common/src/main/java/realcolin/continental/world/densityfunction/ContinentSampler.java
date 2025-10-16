@@ -9,6 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import realcolin.continental.world.continent.Continents;
 
 import java.awt.*;
+import java.util.HashMap;
 
 public class ContinentSampler implements DensityFunction.SimpleFunction {
 
@@ -18,9 +19,9 @@ public class ContinentSampler implements DensityFunction.SimpleFunction {
                     DensityFunction.HOLDER_HELPER_CODEC.fieldOf("base").forGetter(src -> src.base)
             ).apply(instance, ContinentSampler::new));
 
-
     private final Holder<Continents> continentsHolder;
     private final DensityFunction base;
+    private final HashMap<FunctionContext, Double> cache = new HashMap<>();
 
     public ContinentSampler(Holder<Continents> continentsHolder, DensityFunction base) {
         this.continentsHolder = continentsHolder;
@@ -29,12 +30,26 @@ public class ContinentSampler implements DensityFunction.SimpleFunction {
 
     @Override
     public double compute(@NotNull FunctionContext functionContext) {
-        return continentsHolder.value().compute(new Point(functionContext.blockX(), functionContext.blockZ()));
+        if (cache.containsKey(functionContext)) {
+            var a = cache.get(functionContext);
+            if (a != null) {
+                return a;
+            }
+        }
+
+        var val = continentsHolder.value().compute(new Point(functionContext.blockX(), functionContext.blockZ()));
+
+        if (cache.size() >= 1000) {
+            cache.clear();
+        }
+
+        cache.put(functionContext, val);
+        return val;
     }
 
     @Override
     public double minValue() {
-        return -100.2;
+        return -1.2;
     }
 
     @Override

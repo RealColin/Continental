@@ -116,7 +116,7 @@ public class Voronoi {
 
     // using Cramer's rule!!
     private Point2D getIntersecting(Line line, Segment seg) {
-        Line segLine = fromSegment(seg);
+        Line segLine = seg.toLine();
 
         double A1 = line.A(), B1 = line.B(), C1 = line.C();
         double A2 = segLine.A(), B2 = segLine.B(), C2 = segLine.C();
@@ -137,18 +137,10 @@ public class Voronoi {
         return new Point2D.Double((p1.getX() + p2.getX()) / 2.0, (p1.getY() + p2.getY()) / 2.0);
     }
 
-    private double slope(Point2D p1, Point2D p2) {
-        if (p1.getX() == p2.getX())
-            return Double.NaN;
-        else if (p1.getY() == p2.getY())
-            return 0.0;
-        else
-            return (p2.getY() - p1.getY()) / (p2.getX() - p1.getX());
-    }
-
     private Line getPerpendicularBisector(Point2D p1, Point2D p2) {
         var midpoint = midpoint(p1, p2);
-        var slope = slope(p1, p2);
+        var seg = new Segment(p1, p2);
+        var slope = seg.getSlope();
         double A, B, C;
         if (slope == 0.0) {
             A = 1;
@@ -166,24 +158,5 @@ public class Voronoi {
         return new Line(A, B, C);
     }
 
-    private Line fromSegment(Segment segment) {
-        var slope = slope(segment.first(), segment.second());
-        var intercept = segment.second().getY() - slope * segment.second().getX();
-        double A, B, C;
-        if (Double.isNaN(slope)) {
-            A = 1;
-            B = 0;
-            C = -segment.second().getX();
-        } else {
-            A = slope;
-            B = -1;
-            C = intercept;
-        }
-        return new Line(A, B, C);
-    }
-
-    // Ax + By + C = 0
-    record Line(double A, double B, double C) { }
-    record Segment(Point2D first, Point2D second) { }
     record Cell(List<Point2D> bounds) {}
 }
