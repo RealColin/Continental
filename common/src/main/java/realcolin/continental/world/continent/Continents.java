@@ -6,6 +6,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.resources.RegistryFileCodec;
 import realcolin.continental.Constants;
 import realcolin.continental.ContinentalRegistries;
+import realcolin.continental.util.Segment;
 import realcolin.continental.util.Voronoi;
 
 import java.awt.*;
@@ -26,7 +27,7 @@ public class Continents {
                     Codec.INT.fieldOf("x").forGetter(Continent::getX),
                     Codec.INT.fieldOf("z").forGetter(Continent::getZ),
                     Codec.INT.fieldOf("radius").forGetter(Continent::getRadius),
-                    P_CODEC.fieldOf("points").forGetter(Continent::getShape)
+                    P_CODEC.fieldOf("points").forGetter(Continent::getBoundaryPoints)
             ).apply(instance, Continent::new));
 
     public static final Codec<Continents> DIRECT_CODEC =
@@ -45,15 +46,41 @@ public class Continents {
         return continents;
     }
 
+    // TODO change this to make the value differ based on how close to the continent edge
     public double compute(Point point) {
         double maxVal = Double.NEGATIVE_INFINITY;
+        var numInside = 0;
 
         for (var c : continents) {
-            if (c.isPointInside(point))
-                maxVal = 1.0;
+            if (c.isPointInside(point)) {
+                numInside++;
+
+                var s = c.getClosestFrom(point);
+                var p = c.getClosestPointFrom(point);
+                var dist = s.toLine().distTo(point);
+
+                var val = 0.0;
+
+                if (dist < 200) {
+                    val = -0.15;
+                } else if (dist < 500) {
+                    val = -0.04;
+                } else if (dist < 1000) {
+                    val = 0.16;
+                } else {
+                    val = 0.5;
+                }
+
+                if (numInside == 1)
+                    maxVal = val;
+                else
+                    maxVal = val + 0.2;
+
+            }
+
         }
 
-        return Math.max(-1.0, maxVal);
+        return Math.clamp(maxVal, -1.0, 1.0);
     }
 
     public static Continents generate(ContinentSettings settings, long seed) {
@@ -89,11 +116,11 @@ public class Continents {
 
 
     private static List<Point2D.Double> getContinentShape(Point2D center, int radius, long seed) {
-        var ret = getBasicContinentShape(center, radius, seed);
-        for (int i = 0; i < 4; i++) {
-            ret = chaikinStep(ret);
+        var shape = getBasicContinentShape(center, radius, seed);
+        for (int i = 0; i < 4; i++) { // was 4 before i think
+            shape = chaikinStep(shape);
         }
-        return ret;
+        return shape;
     }
 
     private static List<Point2D.Double> chaikinStep(List<Point2D.Double> shape) {

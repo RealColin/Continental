@@ -85,7 +85,7 @@ public class DataGeneration {
                                 "radius": %d,
                                 "points": [
                     """.formatted(continent.getX(), continent.getZ(), continent.getRadius()));
-            for (var point : continent.getShape()) {
+            for (var point : continent.getBoundaryPoints()) {
                 continentsString.append(
                         """
                                         {
@@ -93,7 +93,7 @@ public class DataGeneration {
                                             "z": %f
                                         },
                         """.formatted(point.getX(), point.getY()));
-                if (point.equals(continent.getShape().getLast()))
+                if (point.equals(continent.getBoundaryPoints().getLast()))
                     continentsString.deleteCharAt(continentsString.length() - 2);
             }
             continentsString.append(

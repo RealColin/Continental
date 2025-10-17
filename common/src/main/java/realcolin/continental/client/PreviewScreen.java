@@ -111,20 +111,9 @@ public class PreviewScreen extends Screen {
                 maxY = bigY;
         }
 
-//        int max, min;
-//        if (maxY - minY > maxX - minX) {
-//            max = maxY;
-//            min = minY;
-//        } else {
-//            max = maxX;
-//            min = minX;
-//        }
-
         var max = Math.max(maxX, maxY);
         var min = Math.min(minX, minY);
 
-//        int imgWidth = (int)(this.width * 0.9);
-//        int imgHeight = (int)(this.height * 0.8);
         int imgWidth = this.width;
         int imgHeight = this.height - 56;
 
@@ -133,6 +122,7 @@ public class PreviewScreen extends Screen {
         var rmax = ratio * max;
         var rmin = ratio * min;
 
+        // TODO select color based on distance to ocean
         previewImage = new NativeImage(NativeImage.Format.RGBA, imgWidth, imgHeight, false);
         for (int y = 0; y < imgHeight; y++) {
             for (int x = 0; x < imgWidth; x++) {
@@ -140,17 +130,34 @@ public class PreviewScreen extends Screen {
                 var yi = min + (y / (float)imgHeight) * (max - min);
                 var val = continents.compute(new Point((int)Math.round(xi), Math.round(yi)));
 
-                int g, b;
-                if (val >= -0.20) {
-                    g = 255;
-                    b = 0;
-                } else {
-                    g = 0;
+                int g, b, r = 0;
+                if (val <= -0.19) {
                     b = 255;
+                    g = 0;
+                } else if (val <= -0.11) {
+                    b = 0;
+                    g = 50;
+                } else if (val <= 0.03) {
+                    b = 0;
+                    g = 150;
+                } else if (val <= 0.3) {
+                    b = 0;
+                    g = 200;
+                } else {
+                    b = 0;
+                    g = 250;
                 }
 
+//                if (val >= -0.20) {
+//                    g = (int)(100 + (val - -0.20) / (1.0 - -0.20) * (255 - 100));
+//                    b = 0;
+//                } else {
+//                    g = 0;
+//                    b = 255;
+//                }
+
                 int a = 255;
-                int abgr = (a << 24) | (b << 16) | (g << 8);
+                int abgr = (a << 24) | (b << 16) | (g << 8) | r;
                 previewImage.setPixelABGR(x, y, abgr);
             }
         }
