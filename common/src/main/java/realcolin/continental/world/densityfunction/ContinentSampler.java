@@ -9,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 import realcolin.continental.world.continent.Continents;
 
 import java.awt.*;
-import java.util.HashMap;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ContinentSampler implements DensityFunction.SimpleFunction {
 
@@ -21,7 +21,7 @@ public class ContinentSampler implements DensityFunction.SimpleFunction {
 
     private final Holder<Continents> continentsHolder;
     private final DensityFunction base;
-    private final HashMap<FunctionContext, Double> cache = new HashMap<>();
+    private final ConcurrentHashMap<FunctionContext, Double> cache = new ConcurrentHashMap<>(4096);
 
     public ContinentSampler(Holder<Continents> continentsHolder, DensityFunction base) {
         this.continentsHolder = continentsHolder;

@@ -131,8 +131,11 @@ public class PreviewScreen extends Screen {
                 var val = continents.compute(new Point((int)Math.round(xi), Math.round(yi)));
 
                 int g, b, r = 0;
-                if (val <= -0.19) {
-                    b = 255;
+                if (val <= -0.455) {
+                    b = 100;
+                    g = 0;
+                } else if (val <= -0.19) {
+                    b = 200;
                     g = 0;
                 } else if (val <= -0.11) {
                     b = 0;

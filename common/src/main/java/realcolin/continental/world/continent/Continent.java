@@ -25,13 +25,13 @@ public class Continent {
         this.boundarySegments = segmentsToLines(shape);
         this.boundingBox = calculateAABB(shape);
 
-        System.out.println("Continent: ");
-        for (var p : boundaryPoints) {
-            System.out.println("(" + p.getX() + ", " + p.getY() + ")");
-        }
-        for (var s : boundarySegments) {
-            System.out.println("polygon((" + s.first().getX() + ", " + s.first().getY() + "), (" + s.second().getX() + ", " + s.second().getY() + "))");
-        }
+//        System.out.println("Continent: ");
+//        for (var p : boundaryPoints) {
+//            System.out.println("(" + p.getX() + ", " + p.getY() + ")");
+//        }
+//        for (var s : boundarySegments) {
+//            System.out.println("polygon((" + s.first().getX() + ", " + s.first().getY() + "), (" + s.second().getX() + ", " + s.second().getY() + "))");
+//        }
     }
 
     // TODO need to take both distancce to center and distance from edges

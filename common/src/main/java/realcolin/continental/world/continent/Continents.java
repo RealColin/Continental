@@ -6,7 +6,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.resources.RegistryFileCodec;
 import realcolin.continental.Constants;
 import realcolin.continental.ContinentalRegistries;
-import realcolin.continental.util.Segment;
+
 import realcolin.continental.util.Voronoi;
 
 import java.awt.*;
@@ -48,39 +48,70 @@ public class Continents {
 
     // TODO change this to make the value differ based on how close to the continent edge
     public double compute(Point point) {
-        double maxVal = Double.NEGATIVE_INFINITY;
-        var numInside = 0;
+//        double maxVal = Double.NEGATIVE_INFINITY;
+//        var numInside = 0;
+//
+//        for (var c : continents) {
+//            if (c.isPointInside(point)) {
+//                numInside++;
+//
+//                var s = c.getClosestFrom(point);
+//                var dist = s.toLine().distTo(point);
+//
+//                var val = 0.0;
+//
+//                if (dist < 2000) {
+//                    val = -0.20 + (dist - 0) / (2000 - 0) * (1 - -0.2);
+//                } else {
+//                    val = 1.0;
+//                }
+//
+//                if (numInside == 1)
+//                    maxVal = val;
+//                else
+//                    maxVal = val + 0.2;
+//
+//            }
+//
+//        }
+//
+//        return Math.clamp(maxVal, -1.0, 1.0);
+        return altCompute(point);
+    }
+
+    // TODO move this into compute and fix performance issue for preview screen
+    private double altCompute(Point point) {
+        var maxVal = Double.NEGATIVE_INFINITY;
+        // TODO make these customizable somehow
+        var inlandRange = 2000;
+        var oceanRange = 1200;
 
         for (var c : continents) {
+            var seg = c.getClosestFrom(point);
+            var dist = seg.distTo(point);
+
             if (c.isPointInside(point)) {
-                numInside++;
-
-                var s = c.getClosestFrom(point);
-                var p = c.getClosestPointFrom(point);
-                var dist = s.toLine().distTo(point);
-
                 var val = 0.0;
 
-                if (dist < 200) {
-                    val = -0.15;
-                } else if (dist < 500) {
-                    val = -0.04;
-                } else if (dist < 1000) {
-                    val = 0.16;
-                } else {
-                    val = 0.5;
-                }
-
-                if (numInside == 1)
-                    maxVal = val;
+                if (dist < inlandRange)
+                    val = -0.20 + (dist - 0) / (inlandRange) * (1 + 0.2);
                 else
-                    maxVal = val + 0.2;
+                    val = 1.0;
 
+                maxVal = Math.max(val, maxVal);
+            } else {
+                var val = 0.0;
+
+                if (dist < oceanRange)
+                    val = -0.21 + (dist - 0) / (oceanRange) * (-1.0 + 0.2);
+                else
+                    val = -1.0;
+
+                maxVal = Math.max(val, maxVal);
             }
-
         }
 
-        return Math.clamp(maxVal, -1.0, 1.0);
+        return maxVal;
     }
 
     public static Continents generate(ContinentSettings settings, long seed) {
