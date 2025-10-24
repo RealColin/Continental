@@ -20,6 +20,7 @@ public class ContinentalTab extends GridLayoutTab {
     private final Slider continentSizeVariation;
     private final Slider continentSpacing;
     private final Slider spacingUniformity;
+    private final ContinentOptionsList list;
 
     public ContinentalTab(Screen parent) {
         super(Component.literal("Continental"));
@@ -91,19 +92,36 @@ public class ContinentalTab extends GridLayoutTab {
                 (b) -> Minecraft.getInstance().setScreen(
                         new PreviewScreen((CreateWorldScreen)parent, getSettings(), ((CreateWorldScreen) parent).getUiState().getSettings().options().seed())));
 
-        row.addChild(minLabel, cell);
-        row.addChild(minContinents, cell);
-        row.addChild(maxLabel, cell);
-        row.addChild(maxContinents, cell);
-        row.addChild(avgSizeLabel, cell);
-        row.addChild(avgContinentSize, cell);
-        row.addChild(variationLabel, cell);
-        row.addChild(continentSizeVariation, cell);
-        row.addChild(spacingLabel, cell);
-        row.addChild(continentSpacing, cell);
-        row.addChild(uniformityLabel, cell);
-        row.addChild(spacingUniformity, cell);
-        row.addChild(button.build(), cell);
+        this.list = new ContinentOptionsList(Minecraft.getInstance(), parent.width - 20, parent.height -32 - 32, 32, parent.height - 32);
+
+        list.addDoubleWidget(minLabel, minContinents);
+        list.addDoubleWidget(maxLabel, maxContinents);
+        list.addDoubleWidget(avgSizeLabel, avgContinentSize);
+        list.addDoubleWidget(variationLabel, continentSizeVariation);
+        list.addDoubleWidget(spacingLabel, continentSpacing);
+        list.addDoubleWidget(uniformityLabel, spacingUniformity);
+        list.addSingleWidget(button.build());
+
+        row.addChild(list, cell);
+
+//        row.addChild(minLabel, cell);
+//        row.addChild(minContinents, cell);
+//        row.addChild(maxLabel, cell);
+//        row.addChild(maxContinents, cell);
+//        row.addChild(avgSizeLabel, cell);
+//        row.addChild(avgContinentSize, cell);
+//        row.addChild(variationLabel, cell);
+//        row.addChild(continentSizeVariation, cell);
+//        row.addChild(spacingLabel, cell);
+//        row.addChild(continentSpacing, cell);
+//        row.addChild(uniformityLabel, cell);
+//        row.addChild(spacingUniformity, cell);
+//        row.addChild(button.build(), cell);
+    }
+
+    public void resize(int width, int height) {
+        list.updateSizeAndPosition(width, height - 32 - 32, 32);
+        list.update(width);
     }
 
     public ContinentSettings getSettings() {

@@ -83,6 +83,18 @@ public abstract class MixinCreateWorldScreen extends Screen {
         this.repositionElements();
     }
 
+    @Inject(method = "repositionElements", at = @At("RETURN"))
+    private void onResize(CallbackInfo ci) {
+        if (tabNavigationBar.getTabs().size() == 3)
+            return;
+
+        var tab = tabNavigationBar.getTabs().get(3);
+
+        if (tab instanceof ContinentalTab ctab) {
+            ctab.resize(this.width, this.height);
+        }
+    }
+
     @Inject(method = "onCreate", at = @At("HEAD"), cancellable = true)
     private void onCreateHead(CallbackInfo ci) {
         if (isReentry) return;
