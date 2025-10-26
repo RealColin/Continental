@@ -12,6 +12,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.tabs.Tab;
 import net.minecraft.client.gui.components.tabs.TabManager;
 import net.minecraft.client.gui.components.tabs.TabNavigationBar;
+import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.screens.worldselection.*;
 import net.minecraft.core.registries.Registries;
@@ -45,6 +46,7 @@ public abstract class MixinCreateWorldScreen extends Screen {
     @Unique private boolean isReentry = false;
 
     @Shadow @Final private TabManager tabManager;
+    @Shadow @Final private HeaderAndFooterLayout layout;
     @Shadow private TabNavigationBar tabNavigationBar;
     @Shadow @Final WorldCreationUiState uiState;
 
@@ -68,7 +70,7 @@ public abstract class MixinCreateWorldScreen extends Screen {
     @Inject(method = "init", at = @At("RETURN"))
     private void addContinentsTab(CallbackInfo ci) {
         var tabs = new ArrayList<>(this.tabNavigationBar.getTabs());
-        tabs.add(new ContinentalTab(this));
+        tabs.add(new ContinentalTab(this, layout));
 
         TabNavigationBar newBar = TabNavigationBar.builder(this.tabManager, this.width)
                 .addTabs(tabs.toArray(new Tab[0]))
@@ -91,7 +93,7 @@ public abstract class MixinCreateWorldScreen extends Screen {
         var tab = tabNavigationBar.getTabs().get(3);
 
         if (tab instanceof ContinentalTab ctab) {
-            ctab.resize(this.width, this.height);
+            ctab.resize(this.width);
         }
     }
 

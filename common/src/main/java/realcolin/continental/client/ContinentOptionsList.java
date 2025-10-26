@@ -10,12 +10,11 @@ import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
 
-// TODO cleanup this class
 public class ContinentOptionsList extends ContainerObjectSelectionList<ContinentOptionsList.Entry> {
     private static final int ROW_HEIGHT = 24;
     private int rowWidth;
 
-    public ContinentOptionsList(Minecraft mc, int width, int height, int top, int bottom) {
+    public ContinentOptionsList(int width, int height) {
         super(Minecraft.getInstance(), width, height, 0, ROW_HEIGHT);
         rowWidth = width - 20;
     }
@@ -25,9 +24,8 @@ public class ContinentOptionsList extends ContainerObjectSelectionList<Continent
         return rowWidth;
     }
 
-    // TODO change this to clamp width somewhat
     public void update(int width) {
-        rowWidth = width - 20;
+        rowWidth = Math.min(width, 410);
     }
 
     public void addSingleWidget(AbstractWidget widget) {
