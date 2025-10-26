@@ -1,7 +1,6 @@
 package realcolin.continental.world.continent;
 
 import net.minecraft.world.phys.AABB;
-import realcolin.continental.util.Line;
 import realcolin.continental.util.Segment;
 
 import java.awt.*;
@@ -24,19 +23,6 @@ public class Continent {
         this.boundaryPoints = shape;
         this.boundarySegments = segmentsToLines(shape);
         this.boundingBox = calculateAABB(shape);
-
-//        System.out.println("Continent: ");
-//        for (var p : boundaryPoints) {
-//            System.out.println("(" + p.getX() + ", " + p.getY() + ")");
-//        }
-//        for (var s : boundarySegments) {
-//            System.out.println("polygon((" + s.first().getX() + ", " + s.first().getY() + "), (" + s.second().getX() + ", " + s.second().getY() + "))");
-//        }
-    }
-
-    // TODO need to take both distancce to center and distance from edges
-    public double distTo(Point point) {
-        return Math.sqrt(Math.pow(point.getX() - x, 2) + Math.pow(point.getY() - z, 2));
     }
 
     public int getX() {
@@ -55,16 +41,6 @@ public class Continent {
         return boundaryPoints;
     }
 
-    public List<Segment> intersectsWith(Line line) {
-        var ret = new ArrayList<Segment>();
-
-        for (var s : boundarySegments) {
-
-        }
-
-        return ret;
-    }
-
     public Segment getClosestFrom(Point point) {
         Segment closest = null;
         var closestDist = Double.POSITIVE_INFINITY;
@@ -74,21 +50,6 @@ public class Continent {
             if (dist < closestDist) {
                 closestDist = dist;
                 closest = s;
-            }
-        }
-
-        return closest;
-    }
-
-    public Point2D getClosestPointFrom(Point point) {
-        Point2D closest = null;
-        var closestDist = Double.POSITIVE_INFINITY;
-
-        for (var p : boundaryPoints) {
-            var dist = p.distance(point);
-            if (dist < closestDist) {
-                closestDist = dist;
-                closest = p;
             }
         }
 

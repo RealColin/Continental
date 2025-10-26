@@ -13,10 +13,9 @@ public record Segment(Point2D first, Point2D second) {
             return (second.getY() - first.getY()) / (second.getX() - first.getX());
     }
 
-    public double distTo(Point2D point) {
+    public double distTo(Point2D p) {
         var a = first;
         var b = second;
-        var p = point;
 
         var abx = b.getX() - a.getX();
         var aby = b.getY() - a.getY();
@@ -29,13 +28,13 @@ public record Segment(Point2D first, Point2D second) {
         var d = proj / absq;
 
         if (d <= 0.0)
-            return a.distance(point);
+            return a.distance(p);
         else if (d >= 1.0)
-            return b.distance(point);
+            return b.distance(p);
 
         var closest = new Point2D.Double(a.getX() + abx * d, a.getY() + aby * d);
 
-        return closest.distance(point);
+        return closest.distance(p);
     }
 
     public Line toLine() {
