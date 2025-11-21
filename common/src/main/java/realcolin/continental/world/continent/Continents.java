@@ -22,6 +22,16 @@ public class Continents {
                     Codec.DOUBLE.fieldOf("z").forGetter(Point2D.Double::getY)
             ).apply(instance, Point2D.Double::new)).listOf();
 
+    private static final Codec<Transitions> T_CODEC =
+            RecordCodecBuilder.create(instance -> instance.group(
+                    Codec.INT.fieldOf("coast").forGetter(Transitions::coast),
+                    Codec.INT.fieldOf("nearInland").forGetter(Transitions::nearInland),
+                    Codec.INT.fieldOf("midInland").forGetter(Transitions::midInland),
+                    Codec.INT.fieldOf("farInland").forGetter(Transitions::farInland),
+                    Codec.INT.fieldOf("ocean").forGetter(Transitions::ocean),
+                    Codec.INT.fieldOf("deepOcean").forGetter(Transitions::deepOcean)
+            ).apply(instance, Transitions::new));
+
     private static final Codec<Continent> C_CODEC =
             RecordCodecBuilder.create(instance -> instance.group(
                     Codec.INT.fieldOf("x").forGetter(Continent::getX),
@@ -32,86 +42,107 @@ public class Continents {
 
     public static final Codec<Continents> DIRECT_CODEC =
             RecordCodecBuilder.create(instance -> instance.group(
-                C_CODEC.listOf().fieldOf("continents").forGetter(src -> src.continents)
+                C_CODEC.listOf().fieldOf("continents").forGetter(src -> src.continents),
+                T_CODEC.fieldOf("transitions").forGetter(src -> src.transitions)
             ).apply(instance, Continents::new));
 
     public static final Codec<Holder<Continents>> CODEC = RegistryFileCodec.create(ContinentalRegistries.CONTINENTS, DIRECT_CODEC);
 
     private final List<Continent> continents;
-    public Continents(List<Continent> continents) {
+    private final Transitions transitions;
+    public Continents(List<Continent> continents, Transitions transitions) {
         this.continents = continents;
+        this.transitions = transitions;
     }
 
     public List<Continent> get() {
         return continents;
     }
 
-    // TODO change this to make the value differ based on how close to the continent edge
-    public double compute(Point point) {
-//        double maxVal = Double.NEGATIVE_INFINITY;
-//        var numInside = 0;
-//
-//        for (var c : continents) {
-//            if (c.isPointInside(point)) {
-//                numInside++;
-//
-//                var s = c.getClosestFrom(point);
-//                var dist = s.toLine().distTo(point);
-//
-//                var val = 0.0;
-//
-//                if (dist < 2000) {
-//                    val = -0.20 + (dist - 0) / (2000 - 0) * (1 - -0.2);
-//                } else {
-//                    val = 1.0;
-//                }
-//
-//                if (numInside == 1)
-//                    maxVal = val;
-//                else
-//                    maxVal = val + 0.2;
-//
-//            }
-//
-//        }
-//
-//        return Math.clamp(maxVal, -1.0, 1.0);
-        return altCompute(point);
+    public Transitions getTransitions() {
+        return transitions;
     }
 
-    // TODO move this into compute and fix performance issue for preview screen
-    private double altCompute(Point point) {
+    // TODO fix performance
+    public double compute(Point point) {
+//        var maxVal = Double.NEGATIVE_INFINITY;
+//        // TODO make these customizable somehow
+//        var inlandRange = 2000;
+//        var oceanRange = 1200;
+//
+//        for (var c : continents) {
+//            var seg = c.getClosestFrom(point);
+//            var dist = seg.distTo(point);
+//
+//            if (c.isPointInside(point)) {
+//                var val = 0.0;
+//
+//                if (dist < inlandRange)
+//                    val = -0.20 + (dist - 0) / (inlandRange) * (1 + 0.2);
+//                else
+//                    val = 1.0;
+//
+//                maxVal = Math.max(val, maxVal);
+//            } else {
+//                var val = 0.0;
+//
+//                if (dist < oceanRange)
+//                    val = -0.21 + (dist - 0) / (oceanRange) * (-1.0 + 0.2);
+//                else
+//                    val = -1.0;
+//
+//                maxVal = Math.max(val, maxVal);
+//            }
+//        }
+//
+//        return maxVal;
+        return tempCompute(point);
+    }
+
+    public double tempCompute(Point point) {
         var maxVal = Double.NEGATIVE_INFINITY;
-        // TODO make these customizable somehow
-        var inlandRange = 2000;
-        var oceanRange = 1200;
 
         for (var c : continents) {
             var seg = c.getClosestFrom(point);
             var dist = seg.distTo(point);
+            var val = 0.0;
 
             if (c.isPointInside(point)) {
-                var val = 0.0;
-
-                if (dist < inlandRange)
-                    val = -0.20 + (dist - 0) / (inlandRange) * (1 + 0.2);
+                if (dist < transitions.coast())
+//                    val = -0.19; // (0, coast) -> (-0.19, -0.11)
+                    val = interpolate(0, transitions.coast(), -0.17, -0.11, dist);
+                else if (dist < transitions.nearInland())
+//                    val = -0.11; // (coast, nearInland) -> (-0.11, 0.03)
+                    val = interpolate(transitions.coast(), transitions.nearInland(), -0.11, 0.03, dist);
+                else if (dist < transitions.midInland())
+//                    val = 0.03; // (nearInland, midInland) -> (0.03, 0.3)
+                    val = interpolate(transitions.nearInland(), transitions.midInland(), 0.03, 0.3, dist);
+                else if (dist < transitions.farInland())
+//                    val = 0.3; // (midInland, farInland) -> (0.3, 1.0)
+                    val = interpolate(transitions.midInland(), transitions.farInland(), 0.3, 1.0, dist);
                 else
                     val = 1.0;
 
                 maxVal = Math.max(val, maxVal);
             } else {
-                var val = 0.0;
-
-                if (dist < oceanRange)
-                    val = -0.21 + (dist - 0) / (oceanRange) * (-1.0 + 0.2);
+                if (dist < transitions.ocean())
+//                    val = -0.19; // (0, ocean) -> (-0.19, -0.455)
+                    val = interpolate(0, transitions.ocean(), -0.19, -0.455, dist);
+                else if (dist < transitions.deepOcean())
+//                    val = -0.455; // (ocean, deepOcean) -> (-0.455, -1.05)
+                    val = interpolate(transitions.ocean(), transitions.deepOcean(), -0.455, -1.05, dist);
                 else
-                    val = -1.0;
+                    val = -1.05;
 
                 maxVal = Math.max(val, maxVal);
             }
         }
 
         return maxVal;
+    }
+
+    private double interpolate(double A, double B, double C, double D, double x) {
+        return C + (x - A) / (B - A) * (D - C);
     }
 
     public static Continents generate(ContinentSettings settings, long seed) {
@@ -130,8 +161,8 @@ public class Continents {
         var rand = new Random(randRadiiSeed);
         var conRand = new Random(continentSeeder);
         var stddev = settings.variation() * settings.meanSize();
-        var minRadius = 0.2 * settings.meanSize(); // TODO put the 0.2 in Constants maybe?
-        var maxRadius = 1.8 * settings.meanSize(); // TODO put the 1.8 in Constants maybe?
+        var minRadius = Constants.MIN_SIZE_MULTIPLIER * settings.meanSize();
+        var maxRadius = Constants.MAX_SIZE_MULTIPLIER * settings.meanSize();
 
         var list = new ArrayList<Continent>();
 
@@ -142,13 +173,13 @@ public class Continents {
             list.add(con);
         }
 
-        return new Continents(list);
+        return new Continents(list, settings.transitions());
     }
 
 
     private static List<Point2D.Double> getContinentShape(Point2D center, int radius, long seed) {
         var shape = getBasicContinentShape(center, radius, seed);
-        for (int i = 0; i < 4; i++) { // was 4 before i think
+        for (int i = 0; i < 4; i++) { // 4 by default
             shape = chaikinStep(shape);
         }
         return shape;
@@ -171,9 +202,10 @@ public class Continents {
         return out;
     }
 
+    // TODO maybe make a slider for N and roughness?
     private static List<Point2D.Double> getBasicContinentShape(Point2D center, int radius, long seed) {
-        int N = 36; // number of points to shape the continent
-        var roughness = 0.9; // variance between radii, increase to have less circular shaped continents
+        int N = 36; // number of points to shape the continent: 36 by default
+        var roughness = 0.9; // variance between radii, increase to have less circular shaped continents: 0.9 by default
         var minFrac = 0.25; // the smallest possible radius
 
         var random = new Random(seed);
@@ -194,6 +226,7 @@ public class Continents {
         // get the radii using radial noise
         var radii = new double[N];
 
+        // TODO maybe make a slider for these too?
         int maxHarmonics = 6;
         var baseAmp = 0.45 * roughness;
         double decay = 0.55;

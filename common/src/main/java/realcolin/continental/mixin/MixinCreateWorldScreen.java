@@ -33,6 +33,7 @@ import realcolin.continental.Constants;
 import realcolin.continental.client.ContinentalTab;
 import realcolin.continental.data.DataGeneration;
 import realcolin.continental.world.continent.ContinentSettings;
+import realcolin.continental.world.continent.Transitions;
 
 import java.io.IOException;
 import java.nio.file.Path;
@@ -111,7 +112,8 @@ public abstract class MixinCreateWorldScreen extends Screen {
         long seed = uiState.getSettings().options().seed();
 
         // TODO do this better
-        var settings = new ContinentSettings(5, 7, 5000, 0.250, 0.500, 0.500);
+        var transitions = new Transitions(60, 200, 900, 1600, 120, 500);
+        var settings = new ContinentSettings(5, 7, 5000, 0.250, 0.500, 0.500, transitions);
         for (var tab : tabNavigationBar.getTabs()) {
             if (tab instanceof ContinentalTab ct) {
                 Constants.LOG.debug("Got settings from Continental tab");

@@ -104,7 +104,22 @@ public class DataGeneration {
             if (continent.equals(continents.get().getLast()))
                 continentsString.deleteCharAt(continentsString.length() - 2);
         }
-        continentsString.append("\t]\n}");
+//        continentsString.append("\t]\n}");
+        var t = continents.getTransitions();
+        continentsString.append("\t],\n");
+        continentsString.append(
+                """
+                    "transitions": {
+                        "coast": %d,
+                        "nearInland": %d,
+                        "midInland": %d,
+                        "farInland": %d,
+                        "ocean": %d,
+                        "deepOcean": %d
+                    }
+                """.formatted(t.coast(), t.nearInland(), t.midInland(), t.farInland(), t.ocean(), t.deepOcean()));
+        continentsString.append("\n}");
+
 
         var str = continentsString.toString();
         var filePath = path.resolve("data/" + Constants.MOD_ID + "/worldgen/continents");

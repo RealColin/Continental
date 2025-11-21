@@ -11,4 +11,6 @@ public class Constants {
     public static final double LAND_COVERAGE_MIN = 0.25;
     public static final double LAND_COVERAGE_MAX = 0.55;
     public static final double EASING_EXP = 0.7;
+    public static final double MIN_SIZE_MULTIPLIER = 0.2;
+    public static final double MAX_SIZE_MULTIPLIER = 1.8;
 }
